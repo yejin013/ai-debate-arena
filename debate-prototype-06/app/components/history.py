@@ -1,30 +1,23 @@
 import streamlit as st
-from utils.state_manager import reset_session_state, set_debate_to_state
-from database.repository import (
-    delete_all_debates,
-    delete_debate_by_id,
-    fetch_debate_by_id,
-    fetch_debate_history,
-)
+from app.utils.state_manager import reset_session_state
+from app.database.repository import debate_repository
 
 
-def render_history_tab():
-    st.subheader("이전 토론 이력")
+def render_history_ui():
 
     col1, col2 = st.columns([1, 1])
 
-    # 이력 새로고침 버튼
     with col1:
         if st.button("이력 새로고침", use_container_width=True):
             st.rerun()
 
-    # 전체 이력 삭제 버튼
     with col2:
         if st.button("전체 이력 삭제", type="primary", use_container_width=True):
-            if delete_all_debates():
+            if debate_repository.delete_all():
                 st.rerun()
 
-    debate_history = fetch_debate_history()
+    # 토론 이력 로드
+    debate_history = debate_repository.fetch()
 
     if not debate_history:
         st.info("저장된 토론 이력이 없습니다.")
@@ -35,30 +28,31 @@ def render_history_tab():
 def render_history_list(debate_history):
     for id, topic, date, rounds in debate_history:
         with st.container(border=True):
-            col1, col2, col3 = st.columns([3, 1, 1])
 
+            # 토론 주제
+            st.write(f"***{topic}***")
+
+            col1, col2, col3 = st.columns([3, 1, 1])
             # 토론 정보
             with col1:
-                st.write(f"***{topic}***")
                 st.caption(f"날짜: {date} | 라운드: {rounds}")
 
             # 보기 버튼
             with col2:
                 if st.button("보기", key=f"view_{id}", use_container_width=True):
-                    load_debate_view(id)
+                    topic, messages, docs = debate_repository.fetch_by_id(id)
+                    if topic and messages:
+                        st.session_state.viewing_history = True
+                        st.session_state.messages = messages
+                        st.session_state.loaded_topic = topic
+                        st.session_state.loaded_debate_id = id
+                        st.session_state.docs = docs
+                        st.session_state.app_mode = "results"
+                        st.rerun()
 
             # 삭제 버튼
             with col3:
                 if st.button("삭제", key=f"del_{id}", use_container_width=True):
-                    if delete_debate_by_id(id):
+                    if debate_repository.delete_by_id(id):
                         reset_session_state()
                         st.rerun()
-
-
-def load_debate_view(debate_id):
-    # DB에서 토론 데이터 로딩
-    topic, messages, docs = fetch_debate_by_id(debate_id)
-    if topic and messages:
-        # 세션 스테이트에 토론 데이터 로드
-        set_debate_to_state(topic, messages, debate_id, docs)
-        st.rerun()

@@ -86,7 +86,7 @@ async def stream_debate_workflow(request: WorkflowRequest):
         "current_round": 1,
         "prev_node": AgentType.PRO,
         "max_rounds": max_rounds,
-        "retrieved_docs": {},
+        "docs": {},
     }
 
     langfuse_handler = CallbackHandler(session_id=session_id)
@@ -114,7 +114,7 @@ async def run_debate_workflow(request: WorkflowRequest):
         "current_round": 1,
         "prev_node": AgentType.PRO,
         "max_rounds": max_rounds,
-        "retrieved_docs": {},
+        "docs": {},
     }
 
     langfuse_handler = CallbackHandler(session_id=session_id)

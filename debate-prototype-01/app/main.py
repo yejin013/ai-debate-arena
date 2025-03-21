@@ -48,10 +48,7 @@ debate_topic = st.text_input(
 # 토론 시작 버튼
 if st.button("토론 시작"):
 
-    # 세션 스테이트 초기화
-    if "debate_started" not in st.session_state:
-        st.session_state.debate_started = True  # 토론 시작 여부
-        st.session_state.debate_history = []  # 토론 내용 기록
+    st.session_state.messages = []  # 토론 내용 기록
 
     # 토론 주제 표시
     st.header(f"토론 주제: {debate_topic}")
@@ -68,9 +65,7 @@ if st.button("토론 시작"):
             pro_prompt, "당신은 논리적이고 설득력 있는 토론자입니다."
         )
 
-        st.session_state.debate_history.append(
-            {"role": "찬성 측", "content": pro_argument}
-        )
+        st.session_state.messages.append({"role": "찬성 측", "content": pro_argument})
 
     # 반대 측 의견 생성
     with st.spinner("반대 측 의견을 생성 중입니다..."):
@@ -84,13 +79,11 @@ if st.button("토론 시작"):
             con_prompt, "당신은 논리적이고 설득력 있는 토론자입니다."
         )
 
-        st.session_state.debate_history.append(
-            {"role": "반대 측", "content": con_argument}
-        )
+        st.session_state.messages.append({"role": "반대 측", "content": con_argument})
 
     # 토론 결과 표시
     st.header("토론 결과")
-    for entry in st.session_state.debate_history:
+    for entry in st.session_state.messages:
         st.subheader(entry["role"])
         st.write(entry["content"])
         st.divider()

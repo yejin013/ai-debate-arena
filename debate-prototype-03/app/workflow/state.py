@@ -25,4 +25,3 @@ class DebateState(TypedDict):
     messages: List[Dict]
     current_round: int
     max_rounds: int
-    agentType: AgentType

@@ -3,10 +3,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # 절대 경로 임포트로 수정
-from routers import api, search, workflow
+from routers import workflow
 
 # 데이터베이스 초기화를 위한 임포트 추가
 from db.database import Base, engine
+from server.routers import history
 
 # 시작 시 데이터베이스 테이블 생성
 Base.metadata.create_all(bind=engine)
@@ -27,8 +28,7 @@ app.add_middleware(
 )
 
 # 라우터 포함
-app.include_router(api.router)
-app.include_router(search.router)
+app.include_router(history.router)
 app.include_router(workflow.router)
 
 

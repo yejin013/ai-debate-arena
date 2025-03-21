@@ -70,14 +70,14 @@ class Agent(ABC):
         query = self._create_search_query(topic)
 
         # 검색 실행
-        retrieved_docs = search_topic(topic, query, k=self.k)
+        docs = search_topic(topic, query, k=self.k)
 
-        debate_state["retrieved_docs"][self.role] = (
-            [doc.page_content for doc in retrieved_docs] if retrieved_docs else []
+        debate_state["docs"][self.role] = (
+            [doc.page_content for doc in docs] if docs else []
         )
 
         # 컨텍스트 포맷팅
-        context = self._format_context(retrieved_docs)
+        context = self._format_context(docs)
 
         # 상태 업데이트
         return {**state, "context": context}
@@ -93,10 +93,10 @@ class Agent(ABC):
             query += " 평가 기준 객관적 사실"
         return query
 
-    def _format_context(self, retrieved_docs: list) -> str:
+    def _format_context(self, docs: list) -> str:
         """검색 결과 포맷팅"""
         context = ""
-        for i, doc in enumerate(retrieved_docs):
+        for i, doc in enumerate(docs):
             source = doc.metadata.get("source", "Unknown")
             section = doc.metadata.get("section", "")
             context += f"[문서 {i + 1}] 출처: {source}"

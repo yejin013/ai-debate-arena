@@ -11,4 +11,4 @@ class Debate(Base):
     date = Column(String, nullable=False)
     rounds = Column(Integer, nullable=False)
     messages = Column(Text, nullable=False)
-    retrieved_docs = Column(Text, nullable=True)  # RAG 검색 결과 저장
+    docs = Column(Text, nullable=True)  # RAG 검색 결과 저장

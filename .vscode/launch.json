@@ -1,0 +1,159 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Streamlit 앱 디버깅 01",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-01/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-01"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 02",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-02/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-02"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 03",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-03/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-03"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 04",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-04/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-04"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 05",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-05/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-05"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 06",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-06/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-06"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 07",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-07/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-07"
+      }
+    },
+    {
+      "name": "Streamlit 앱 디버깅 08",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run",
+        "${workspaceFolder}/debate-prototype-08/app/main.py",
+        "--server.port=8501"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-08"
+      }
+    },
+    {
+      "name": "FastAPI 서버 디버깅 08",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+          "main:app",
+          "--reload",
+          "--port=8000",
+          "--host=0.0.0.0"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false,
+      "env": {
+          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/debate-prototype-08/server"
+      },
+      "cwd": "${workspaceFolder}/debate-prototype-08/server"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
 
-from llm.config import get_llm
+from utils.config import get_llm
 
 
 # AI 응답 생성 함수 (메시지 히스토리 포함)
@@ -40,7 +40,7 @@ def handle_pro_round(topic: str):
             system_prompt = "당신은 논리적이고 설득력 있는 찬성 측 토론자입니다."
         else:
             # 이전 반대 측 의견에 대한 반박
-            previous_argument = st.session_state.debate_history[-1]["content"]
+            previous_argument = st.session_state.messages[-1]["content"]
             pro_prompt = f"""
             당신은 '{topic}'에 대해 찬성 입장을 가진 토론자입니다.
             반대 측의 다음 주장에 대해 반박하고, 찬성 입장을 더 강화해주세요:
@@ -52,18 +52,15 @@ def handle_pro_round(topic: str):
             system_prompt = "당신은 논리적이고 설득력 있는 찬성 측 토론자입니다. 반대 측 주장에 대해 적극적으로 반박하세요."
 
         pro_argument = generate_response(
-            pro_prompt, system_prompt, st.session_state.debate_history
+            pro_prompt, system_prompt, st.session_state.messages
         )
 
-        st.session_state.debate_history.append(
-            {"role": "찬성 측", "content": pro_argument}
-        )
-        st.session_state.current_step = f"con_round_{st.session_state.round}"
+        st.session_state.messages.append({"role": "찬성 측", "content": pro_argument})
 
 
 def handle_con_round(topic: str):
     with st.spinner("반대 측 의견을 생성 중입니다..."):
-        previous_argument = st.session_state.debate_history[-1]["content"]
+        previous_argument = st.session_state.messages[-1]["content"]
         con_prompt = f"""
         당신은 '{topic}'에 대해 반대 입장을 가진 토론자입니다.
         찬성 측의 다음 주장에 대해 반박하고, 반대 입장을 제시해주세요:
@@ -75,19 +72,10 @@ def handle_con_round(topic: str):
         system_prompt = "당신은 논리적이고 설득력 있는 반대 측 토론자입니다. 찬성 측 주장에 대해 적극적으로 반박하세요."
 
         con_argument = generate_response(
-            con_prompt, system_prompt, st.session_state.debate_history
+            con_prompt, system_prompt, st.session_state.messages
         )
 
-        st.session_state.debate_history.append(
-            {"role": "반대 측", "content": con_argument}
-        )
-        # 라운드 증가
-        st.session_state.round += 1
-
-        if st.session_state.round <= st.session_state.max_rounds:
-            st.session_state.current_step = f"pro_round_{st.session_state.round}"
-        else:
-            st.session_state.current_step = "judge"
+        st.session_state.messages.append({"role": "반대 측", "content": con_argument})
 
 
 def handle_judge(topic: str):
@@ -97,7 +85,7 @@ def handle_judge(topic: str):
 
         토론 내용:
         """
-        for entry in st.session_state.debate_history:
+        for entry in st.session_state.messages:
             judge_prompt += f"\n\n{entry['role']}: {entry['content']}"
 
         judge_prompt += """
@@ -110,7 +98,6 @@ def handle_judge(topic: str):
         """
         system_prompt = "당신은 공정하고 논리적인 토론 심판입니다. 양측의 주장을 면밀히 검토하고 객관적으로 평가해주세요."
 
-        judge_verdict = generate_response(judge_prompt, system_prompt, [])
+        judge_argument = generate_response(judge_prompt, system_prompt, [])
 
-        st.session_state.judge_verdict = judge_verdict
-        st.session_state.current_step = "completed"
+        st.session_state.messages.append({"role": "심판", "content": judge_argument})

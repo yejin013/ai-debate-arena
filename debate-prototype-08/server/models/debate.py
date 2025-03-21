@@ -11,5 +11,5 @@ class Debate(Base):
     topic = Column(String(255), nullable=False)
     rounds = Column(Integer, default=1)
     messages = Column(Text, nullable=False)  # JSON 문자열로 저장
-    retrieved_docs = Column(Text, nullable=True)  # JSON 문자열로 저장
+    docs = Column(Text, nullable=True)  # JSON 문자열로 저장
     created_at = Column(DateTime(timezone=True), server_default=func.now())

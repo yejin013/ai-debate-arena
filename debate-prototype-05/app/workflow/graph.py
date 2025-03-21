@@ -15,65 +15,69 @@ def create_debate_graph(enable_rag) -> StateGraph:
 
     if not enable_rag:
 
-        def increment_round_router(state: DebateState) -> str:
-            if state["current_round"] > state["max_rounds"]:
-                return AgentType.JUDGE
-            return AgentType.PRO
-
-        def agent_router(state: DebateState) -> str:
-            prev_node = state["prev_node"]
-
-            if prev_node == AgentType.PRO:
-                return AgentType.CON
-            elif prev_node == AgentType.CON:
-                return "INCREMENT_ROUND"
-            else:
-                print(f"WARNING: Unexpected speaker role: {prev_node}")
-                return AgentType.PRO
-
-        workflow.add_conditional_edges(AgentType.PRO, agent_router)
-        workflow.add_conditional_edges(AgentType.CON, agent_router)
-        workflow.add_conditional_edges("INCREMENT_ROUND", increment_round_router)
+        workflow.add_edge(AgentType.PRO, AgentType.CON)
+        workflow.add_edge(AgentType.CON, "INCREMENT_ROUND")
         workflow.add_edge(AgentType.JUDGE, END)
 
+        workflow.add_conditional_edges(
+            "INCREMENT_ROUND",
+            lambda s: (
+                AgentType.JUDGE
+                if s["current_round"] > s["max_rounds"]
+                else AgentType.PRO
+            ),
+            [AgentType.JUDGE, AgentType.PRO],
+        )
+
         workflow.set_entry_point(AgentType.PRO)
+        workflow.add_edge(AgentType.JUDGE, END)
+
     else:
-
-        def increment_round_router(state: DebateState) -> str:
-            return "RETRIEVER"  # Agent 대신 RAG 노드로 이동
-
-        def agent_router(state: DebateState) -> str:
-            prev_node = state["prev_node"]
-
-            if prev_node == AgentType.PRO:
-                return "RETRIEVER"  # Agent 대신 RAG 노드로 이동
-            elif prev_node == AgentType.CON:
-                return "INCREMENT_ROUND"
-            else:
-                print(f"WARNING: Unexpected speaker role: {prev_node}")
-                return AgentType.PRO
 
         def retriever_router(state: DebateState) -> str:
             prev_node = state["prev_node"]
             if prev_node == "START":
+                # 시작 노드에서는 PRO 에이전트로 시작
                 return AgentType.PRO
             elif prev_node == AgentType.PRO:
+                # 이전 노드가 PRO 에이전트인 경우 CON 에이전트로 이동
                 return AgentType.CON
             elif prev_node == AgentType.CON:
+                # 이전 노드가 CON 에이전트인 경우 라운드 증가
                 if state["current_round"] > state["max_rounds"]:
                     return AgentType.JUDGE
+                # 아직 라운드가 남은 경우 PRO 에이전트로 이동
                 return AgentType.PRO
             else:
                 print(f"WARNING: Unexpected speaker role: {prev_node}")
 
-        workflow.add_conditional_edges(AgentType.PRO, agent_router)
-        workflow.add_conditional_edges(AgentType.CON, agent_router)
-        workflow.add_conditional_edges("INCREMENT_ROUND", increment_round_router)
-        workflow.add_edge(AgentType.JUDGE, END)
+        workflow.add_edge(AgentType.PRO, "RETRIEVER")
+        workflow.add_edge(AgentType.CON, "INCREMENT_ROUND")
+        workflow.add_edge("INCREMENT_ROUND", "RETRIEVER")
 
         workflow.add_node("RETRIEVER", retriever)
-        workflow.add_conditional_edges("RETRIEVER", retriever_router)
+        workflow.add_conditional_edges(
+            "RETRIEVER",
+            retriever_router,
+            [AgentType.PRO, AgentType.CON, AgentType.JUDGE],
+        )
 
         workflow.set_entry_point("RETRIEVER")
+        workflow.add_edge(AgentType.JUDGE, END)
 
     return workflow.compile()
+
+
+if __name__ == "__main__":
+
+    graph = create_debate_graph(True)
+
+    graph_image = graph.get_graph().draw_mermaid_png()
+
+    output_path = "debate_graph.png"
+    with open(output_path, "wb") as f:
+        f.write(graph_image)
+
+    import subprocess
+
+    subprocess.run(["open", output_path])

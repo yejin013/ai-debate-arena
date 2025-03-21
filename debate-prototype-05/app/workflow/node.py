@@ -1,6 +1,6 @@
-from retrieval.vector_store import create_vector_store, search_topic
+from retrieval.vector_store import search_topic
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
-from workflow.config import get_llm
+from app.utils.config import get_llm
 from app.workflow.state import DebateState, AgentType
 
 
@@ -9,10 +9,9 @@ def pro_agent(state: DebateState) -> DebateState:
     # 시스템 프롬프트 설정
     system_prompt = "당신은 논리적이고 설득력 있는 찬성 측 토론자입니다."
 
-    # 메시지 준비
     messages = [SystemMessage(content=system_prompt)]
 
-    # 기존 대화 기록 추가
+    # state에서 메시지 가져오기
     for message in state["messages"]:
         if message["role"] == "assistant":
             messages.append(AIMessage(content=message["content"]))
@@ -61,7 +60,6 @@ def pro_agent(state: DebateState) -> DebateState:
 
 # 반대 측 에이전트 노드
 def con_agent(state: DebateState) -> DebateState:
-    """반대 측 에이전트 함수"""
     # 시스템 프롬프트 설정
     system_prompt = "당신은 논리적이고 설득력 있는 반대 측 토론자입니다. 찬성 측 주장에 대해 적극적으로 반박하세요."
 
@@ -84,13 +82,13 @@ def con_agent(state: DebateState) -> DebateState:
     previous_messages = [m for m in state["messages"] if m["role"] == AgentType.PRO]
     last_pro_message = previous_messages[-1]["content"]
     prompt = f"""
-    당신은 '{state['topic']}'에 대해 반대 입장을 가진 토론자입니다.
-    다음은 이 주제와 관련된 정보입니다:
-        {context}
-    찬성 측의 다음 주장에 대해 반박하고, 반대 입장을 제시해주세요:
-    찬성 측 주장: "{last_pro_message}"
-    2 ~ 3문단, 각 문단은 100자내로 작성해주세요.
-    """
+        당신은 '{state['topic']}'에 대해 반대 입장을 가진 토론자입니다.
+        다음은 이 주제와 관련된 정보입니다:
+            {context}
+        찬성 측의 다음 주장에 대해 반박하고, 반대 입장을 제시해주세요:
+        찬성 측 주장: "{last_pro_message}"
+        2 ~ 3문단, 각 문단은 100자내로 작성해주세요.
+        """
 
     # LLM에 요청
     messages.append(HumanMessage(content=prompt))
@@ -116,23 +114,22 @@ def judge_agent(state: DebateState) -> DebateState:
     context = state.get("contexts", {}).get(AgentType.JUDGE, "")
 
     prompt = f"""
-    다음은 '{state['topic']}'에 대한 찬반 토론입니다. 각 측의 주장을 분석하고 평가해주세요.
-    다음은 이 주제와 관련된 객관적인 정보입니다:
-        {context}
-    토론 내용:
-    """
+        다음은 '{state['topic']}'에 대한 찬반 토론입니다. 각 측의 주장을 분석하고 평가해주세요.
+        다음은 이 주제와 관련된 객관적인 정보입니다:
+            {context}
+        토론 내용:
+        """
     for message in state["messages"]:
         agentType_text = AgentType.to_korean(message["role"])
         prompt += f"\n\n{agentType_text}: {message['content']}"
 
     prompt += """
-    
-    위 토론을 분석하여 다음을 포함하는 심사 평가를 해주세요:
-    1. 양측 주장의 핵심 요약
-    2. 각 측이 사용한 주요 논리와 증거의 강점과 약점
-    3. 전체 토론의 승자와 그 이유
-    4. 양측 모두에게 개선점 제안
-    """
+        위 토론을 분석하여 다음을 포함하는 심사 평가를 해주세요:
+        1. 양측 주장의 핵심 요약
+        2. 각 측이 사용한 주요 논리와 증거의 강점과 약점
+        3. 전체 토론의 승자와 그 이유
+        4. 양측 모두에게 개선점 제안
+        """
 
     # LLM에 요청
     messages.append(HumanMessage(content=prompt))
@@ -162,10 +159,8 @@ def retriever(state: DebateState) -> DebateState:
         agentType = AgentType.JUDGE
     else:
         if prev_node == "START":
-            # 시작 노드면 찬성 에이전트 검색
             agentType = AgentType.PRO
         else:
-            # 이전 노드가 PRO면 CON 검색, CON이면 PRO로 검색
             agentType = AgentType.CON if prev_node == AgentType.PRO else AgentType.PRO
 
     topic = state["topic"]
@@ -180,16 +175,23 @@ def retriever(state: DebateState) -> DebateState:
         query += " 평가 기준 객관적 사실"
 
     # 관련 정보 검색
-    retrieved_docs = search_topic(topic, query, k=RETRIEVAL_K)
+    docs = search_topic(topic, agentType, query, k=RETRIEVAL_K)
 
     # 검색 결과를 컨텍스트로 변환
     context = ""
-    for i, doc in enumerate(retrieved_docs):
+    for i, doc in enumerate(docs):
+
+        # 문서 정보
         source = doc.metadata.get("source", "Unknown")
+        # 섹션 정보
         section = doc.metadata.get("section", "")
+
+        # 컨텍스트 구성
         context += f"[문서 {i + 1}] 출처: {source}"
         if section:
             context += f", 섹션: {section}"
+
+        # context는 유저 메세지에 포함
         context += f"\n{doc.page_content}\n\n"
 
     new_state = state.copy()
@@ -198,12 +200,6 @@ def retriever(state: DebateState) -> DebateState:
     if "contexts" not in new_state:
         new_state["contexts"] = {}
     new_state["contexts"][agentType] = context
-
-    # 검색된 문서 저장
-    if "retrieved_docs" not in new_state:
-        new_state["retrieved_docs"] = {}
-    new_state["retrieved_docs"][agentType] = (
-        [doc.page_content for doc in retrieved_docs] if retrieved_docs else []
-    )
+    new_state["docs"][agentType] = [doc.page_content for doc in docs] if docs else []
 
     return new_state

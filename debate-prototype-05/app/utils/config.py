@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
+from langfuse import Langfuse
 
 # .env 파일에서 환경 변수 로드
 load_dotenv()
@@ -24,3 +25,14 @@ def get_embeddings():
         api_key=os.getenv("AZURE_OPENAI_API_KEY"),
         azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
     )
+
+
+def get_langfuse():
+    return Langfuse(
+        secret_key=os.getenv("LANGFUSE_SECRET_KEY"),
+        public_key=os.getenv("LANGFUSE_PUBLIC_KEY"),
+        host=os.getenv("LANGFUSE_HOST"),
+    )
+
+
+langfuse = get_langfuse()

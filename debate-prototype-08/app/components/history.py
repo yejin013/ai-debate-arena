@@ -1,12 +1,13 @@
 import streamlit as st
 import requests
 import json
-from utils.state_manager import reset_session_state, set_debate_to_state
+from utils.state_manager import reset_session_state
 
 # API 엔드포인트 기본 URL
 API_BASE_URL = "http://localhost:8000/api/v1"
 
 
+# API로 토론 이력 조회
 def fetch_debate_history():
     """API를 통해 토론 이력 가져오기"""
     try:
@@ -26,6 +27,7 @@ def fetch_debate_history():
         return []
 
 
+# API로 특정 토론 데이터 조회
 def fetch_debate_by_id(debate_id):
     """API를 통해 특정 토론 데이터 가져오기"""
     try:
@@ -40,9 +42,9 @@ def fetch_debate_by_id(debate_id):
                 else debate["messages"]
             )
             docs = (
-                json.loads(debate["retrieved_docs"])
-                if isinstance(debate["retrieved_docs"], str)
-                else debate.get("retrieved_docs", {})
+                json.loads(debate["docs"])
+                if isinstance(debate["docs"], str)
+                else debate.get("docs", {})
             )
             return topic, messages, docs
         else:
@@ -53,6 +55,7 @@ def fetch_debate_by_id(debate_id):
         return None, None, None
 
 
+# API로 토론 삭제
 def delete_debate_by_id(debate_id):
     """API를 통해 특정 토론 삭제"""
     try:
@@ -68,6 +71,7 @@ def delete_debate_by_id(debate_id):
         return False
 
 
+# API로 모든 토론 삭제
 def delete_all_debates():
     """API를 통해 모든 토론 삭제"""
     try:
@@ -91,22 +95,21 @@ def delete_all_debates():
         return False
 
 
-def render_history_tab():
-    st.subheader("이전 토론 이력")
+# 토론 이력 UI 렌더링
+def render_history_ui():
 
     col1, col2 = st.columns([1, 1])
 
-    # 이력 새로고침 버튼
     with col1:
         if st.button("이력 새로고침", use_container_width=True):
             st.rerun()
 
-    # 전체 이력 삭제 버튼
     with col2:
         if st.button("전체 이력 삭제", type="primary", use_container_width=True):
             if delete_all_debates():
                 st.rerun()
 
+    # 토론 이력 로드
     debate_history = fetch_debate_history()
 
     if not debate_history:
@@ -115,20 +118,31 @@ def render_history_tab():
         render_history_list(debate_history)
 
 
+# 토론 이력 목록 렌더링
 def render_history_list(debate_history):
     for id, topic, date, rounds in debate_history:
         with st.container(border=True):
-            col1, col2, col3 = st.columns([3, 1, 1])
 
+            # 토론 주제
+            st.write(f"***{topic}***")
+
+            col1, col2, col3 = st.columns([3, 1, 1])
             # 토론 정보
             with col1:
-                st.write(f"***{topic}***")
                 st.caption(f"날짜: {date} | 라운드: {rounds}")
 
             # 보기 버튼
             with col2:
                 if st.button("보기", key=f"view_{id}", use_container_width=True):
-                    load_debate_view(id)
+                    topic, messages, docs = fetch_debate_by_id(id)
+                    if topic and messages:
+                        st.session_state.viewing_history = True
+                        st.session_state.messages = messages
+                        st.session_state.loaded_topic = topic
+                        st.session_state.loaded_debate_id = id
+                        st.session_state.docs = docs
+                        st.session_state.app_mode = "results"
+                        st.rerun()
 
             # 삭제 버튼
             with col3:
@@ -136,12 +150,3 @@ def render_history_list(debate_history):
                     if delete_debate_by_id(id):
                         reset_session_state()
                         st.rerun()
-
-
-def load_debate_view(debate_id):
-    # API를 통해 토론 데이터 로딩
-    topic, messages, docs = fetch_debate_by_id(debate_id)
-    if topic and messages:
-        # 세션 스테이트에 토론 데이터 로드
-        set_debate_to_state(topic, messages, debate_id, docs)
-        st.rerun()

@@ -25,4 +25,5 @@ class DebateState(TypedDict):
     current_round: int
     prev_node: str
     max_rounds: int
-    retrieved_docs: Dict[str, List]  # RAG 검색 결과
+    docs: Dict[str, List]  # RAG 검색 결과
+    contexts: Dict[str, str]  # RAG 검색 컨텍스트

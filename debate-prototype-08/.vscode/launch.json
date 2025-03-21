@@ -7,7 +7,10 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
+      }
     },
     {
       "name": "Streamlit 앱 디버깅",
@@ -16,15 +19,15 @@
       "module": "streamlit",
       "args": [
           "run",
-          "${workspaceFolder}/app/main.py",
+          "${file}",
           "--server.port=8501",
-          "--server.headless=true",
+          "--server.headless=true"
       ],
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
-          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/.."
-      },
+          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
+      }
     },
     {
       "name": "FastAPI 서버 디버깅",
@@ -40,7 +43,7 @@
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
-          "PYTHONPATH": "${workspaceFolder}/server:${workspaceFolder}/.."
+          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/server"
       },
       "cwd": "${workspaceFolder}"
     }

@@ -2,31 +2,33 @@ import streamlit as st
 
 from typing import Dict, Any
 
-from components.history import render_history_tab
+from app.components.history import render_history_ui
 
 
-def render_settings_tab():
-    """설정 탭 렌더링"""
-    # 토론 주제 입력
-    st.text_input(
-        label="토론 주제를 입력하세요:",
-        value="인공지능은 인간의 일자리를 대체할 수 있습니다.",
-        key="ui_debate_topic",
-    )
+def render_input_form():
+    with st.form("debate_form", border=False):
+        # 토론 주제 입력
+        st.text_input(
+            label="토론 주제를 입력하세요:",
+            value="인공지능은 인간의 일자리를 대체할 수 있습니다.",
+            key="ui_topic",
+        )
 
-    st.slider("토론 라운드 수", min_value=1, max_value=5, value=1, key="ui_max_rounds")
+        max_rounds = st.slider("토론 라운드 수", min_value=1, max_value=5, value=1)
+        st.session_state.max_rounds = max_rounds
+        st.form_submit_button(
+            "토론 시작",
+            on_click=lambda: st.session_state.update({"app_mode": "debate"}),
+        )
 
 
 def render_sidebar() -> Dict[str, Any]:
-    """사이드바 렌더링"""
     with st.sidebar:
-        st.header("토론 설정")
 
-        # 탭 추가: 새 토론 / 이력 조회
         tab1, tab2 = st.tabs(["새 토론", "토론 이력"])
 
         with tab1:
-            render_settings_tab()
+            render_input_form()
 
         with tab2:
-            render_history_tab()
+            render_history_ui()

@@ -8,13 +8,14 @@
       "module": "streamlit",
       "args": [
           "run",
-          "${workspaceFolder}/app/main.py",
-          "--server.port=8501"
+          "${file}",
+          "--server.port=8501",
+          "--server.headless=true"
       ],
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
-          "PYTHONPATH": "${workspaceFolder}/ch05"
+          "PYTHONPATH": "${workspaceFolder}"
       }
   }
   ]
