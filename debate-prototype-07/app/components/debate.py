@@ -131,7 +131,7 @@ def render_control_buttons():
 
 
 def delete_current_debate():
-    from app.database.repository import delete_debate_by_id
+    from database.repository import delete_debate_by_id
 
     if (
         st.session_state.viewing_history

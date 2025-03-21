@@ -1,6 +1,6 @@
-from app.workflow.agents.con_agent import ConAgent
-from app.workflow.agents.judge_agent import JudgeAgent
-from app.workflow.agents.pro_agent import ProAgent
+from workflow.agents.con_agent import ConAgent
+from workflow.agents.judge_agent import JudgeAgent
+from workflow.agents.pro_agent import ProAgent
 from workflow.agents.round_manager import RoundManager
 from workflow.state import DebateState, AgentType
 from langgraph.graph import StateGraph, END

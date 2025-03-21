@@ -1,8 +1,8 @@
 import streamlit as st
 from langchain_community.vectorstores import FAISS
 from typing import Any, Dict, Optional, List
-from app.utils.config import get_embeddings
-from app.retrieval.search_service import get_search_content, improve_search_query
+from utils.config import get_embeddings
+from retrieval.search_service import get_search_content, improve_search_query
 
 
 # st.cache_resource 데코레이터를 사용하여 벡터 스토어를 캐싱

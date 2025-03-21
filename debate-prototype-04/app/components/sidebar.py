@@ -2,7 +2,7 @@ import streamlit as st
 
 from typing import Dict, Any
 
-from app.components.history import render_history_ui
+from components.history import render_history_ui
 
 
 def render_input_form():

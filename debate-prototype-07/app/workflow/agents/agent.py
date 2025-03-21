@@ -1,7 +1,7 @@
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
-from app.retrieval.vector_store import search_topic
-from app.utils.config import get_llm
-from app.workflow.state import DebateState, AgentType
+from retrieval.vector_store import search_topic
+from utils.config import get_llm
+from workflow.state import DebateState, AgentType
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, TypedDict
 from langchain_core.messages import BaseMessage

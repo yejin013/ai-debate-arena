@@ -1,6 +1,6 @@
 import streamlit as st
-from app.utils.state_manager import reset_session_state
-from app.database.repository import debate_repository
+from utils.state_manager import reset_session_state
+from database.repository import debate_repository
 
 
 def render_history_ui():

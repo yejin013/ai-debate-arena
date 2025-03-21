@@ -1,7 +1,7 @@
 from retrieval.vector_store import search_topic
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
-from app.utils.config import get_llm
-from app.workflow.state import DebateState, AgentType
+from utils.config import get_llm
+from workflow.state import DebateState, AgentType
 
 
 # 찬성 측 에이전트 노드

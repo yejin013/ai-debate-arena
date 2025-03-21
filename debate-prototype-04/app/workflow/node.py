@@ -1,5 +1,5 @@
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
-from app.utils.config import get_llm
+from utils.config import get_llm
 from workflow.state import DebateState, AgentType
 
 

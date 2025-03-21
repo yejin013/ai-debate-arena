@@ -3,7 +3,7 @@ from langchain.schema import Document
 from typing import List, Literal
 from duckduckgo_search import DDGS
 from langchain.schema import HumanMessage, SystemMessage
-from app.utils.config import get_llm
+from utils.config import get_llm
 
 
 def improve_search_query(

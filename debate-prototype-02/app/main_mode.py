@@ -1,6 +1,6 @@
 import streamlit as st
 
-from app.debate import handle_con_round, handle_judge, handle_pro_round
+from debate import handle_con_round, handle_judge, handle_pro_round
 from utils.state_manager import init_session_state, reset_session_state
 
 
