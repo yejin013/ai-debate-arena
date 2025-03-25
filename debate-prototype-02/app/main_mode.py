@@ -5,7 +5,6 @@ from utils.state_manager import init_session_state, reset_session_state
 
 
 def render_input_form():
-    """토론 주제와 라운드 수를 입력받는 폼을 렌더링"""
     with st.form("debate_form", border=False):
         # 토론 주제 입력
         st.text_input(

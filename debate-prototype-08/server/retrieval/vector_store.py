@@ -1,77 +1,35 @@
+import streamlit as st
 from langchain_community.vectorstores import FAISS
 from typing import Any, Dict, Optional, List
-from workflow.config import get_embeddings
-from retrieval.search_service import get_search_content
-from langchain_core.documents import Document
-import functools
-import logging
-from datetime import datetime, timedelta
-
-CACHE_EXPIRY = timedelta(hours=1)  # 캐시 만료 시간 설정
+from retrieval.search_service import get_search_content, improve_search_query
+from utils.config import get_embeddings
 
 
-def cached_function(expiry=CACHE_EXPIRY):
-    """
-    함수 결과를 캐싱하는 데코레이터
-    """
+def get_topic_vector_store(
+    topic: str, role: str, language: str = "ko"
+) -> Optional[FAISS]:
 
-    def decorator(func):
-        cache = {}
-
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            key = str(args) + str(kwargs)
-            current_time = datetime.now()
-
-            if key in cache:
-                result, timestamp = cache[key]
-                if current_time - timestamp < expiry:
-                    return result
-
-            result = func(*args, **kwargs)
-            cache[key] = (result, current_time)
-            return result
-
-        return wrapper
-
-    return decorator
-
-
-@cached_function()
-def retrieve_documents(topic: str, language: str = "ko") -> List[Document]:
-    documents = []
-    wiki_docs = get_search_content(topic, language)
-    if wiki_docs:
-        documents.extend(wiki_docs)
-
-    return documents
-
-
-def create_vector_store(documents: List[Document]) -> Optional[FAISS]:
+    # 검색어 개선
+    improved_queries = improve_search_query(topic, role)
+    # 개선된 검색어로 검색 콘텐츠 가져오기
+    documents = get_search_content(improved_queries, language)
     if not documents:
         return None
     try:
-        vector_store = FAISS.from_documents(documents, get_embeddings())
-        return vector_store
+        return FAISS.from_documents(documents, get_embeddings())
     except Exception as e:
-        logging.error(f"Vector DB 생성 중 오류 발생: {str(e)}")
+        st.error(f"Vector DB 생성 중 오류 발생: {str(e)}")
         return None
 
 
-@cached_function()
-def _get_topic_vector_store(topic: str) -> Optional[FAISS]:
-    documents = retrieve_documents(topic)
-    return create_vector_store(documents)
-
-
-def search_topic(topic: str, query: str, k: int = 5) -> List[Dict[str, Any]]:
-    vector_store = _get_topic_vector_store(topic)
+def search_topic(topic: str, role: str, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    # 문서를 검색해서 벡터 스토어 생성
+    vector_store = get_topic_vector_store(topic, role)
     if not vector_store:
         return []
-
     try:
-        results = vector_store.similarity_search(query, k=k)
-        return results
+        # 벡터 스토어에서 Similarity Search 수행
+        return vector_store.similarity_search(query, k=k)
     except Exception as e:
-        logging.error(f"검색 중 오류 발생: {str(e)}")
+        st.error(f"검색 중 오류 발생: {str(e)}")
         return []

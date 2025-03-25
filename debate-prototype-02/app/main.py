@@ -29,9 +29,9 @@ def render_ui():
 
         max_rounds = st.slider("토론 라운드 수", min_value=1, max_value=5, value=1)
         st.session_state.max_rounds = max_rounds
-        if st.form_submit_button("토론 시작"):
-            start_debate()
-        # st.form_submit_button("토론 시작", on_click=start_debate)
+        # if st.form_submit_button("토론 시작"):
+        #     start_debate()
+        st.form_submit_button("토론 시작", on_click=start_debate)
 
 
 # 토론 시작 함수 정의
@@ -81,14 +81,16 @@ def display_debate_results():
         st.write(entry["content"])
         st.divider()
 
-    if st.form_submit_button("새 토론 시작"):
-        # if st.button("새 토론 시작"):
+    # if st.form_submit_button("새 토론 시작"):
+    if st.button("새 토론 시작"):
         reset_session_state()
         st.rerun()
 
 
 if __name__ == "__main__":
 
+    # session_state 초기화
     init_session_state()
 
+    # UI 렌더링
     render_ui()

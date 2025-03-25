@@ -9,24 +9,6 @@ from database.repository import debate_repository
 from langfuse.callback import CallbackHandler
 
 
-def render_input_form():
-
-    with st.form("debate_form", border=False):
-        # 토론 주제 입력
-        st.text_input(
-            label="토론 주제를 입력하세요:",
-            value="인공지능은 인간의 일자리를 대체할 수 있습니다.",
-            key="ui_topic",
-        )
-
-        max_rounds = st.slider("토론 라운드 수", min_value=1, max_value=5, value=1)
-        st.session_state.max_rounds = max_rounds
-        st.form_submit_button(
-            "토론 시작",
-            on_click=lambda: st.session_state.update({"app_mode": "debate"}),
-        )
-
-
 def start_debate():
 
     topic = st.session_state.ui_topic
@@ -52,55 +34,72 @@ def start_debate():
         session_id = str(uuid.uuid4())
         langfuse_handler = CallbackHandler(session_id=session_id)
 
-        displayed_messages = set()
-
         for chunk in debate_graph.stream(
             initial_state,
             config={"callbacks": [langfuse_handler]},
+            subgraphs=True,
+            stream_mode="updates",
         ):
-            if chunk:
-                for role, state in chunk.items():
-                    st.session_state.messages = state["messages"]
-                    st.session_state.docs = state["docs"]
 
-                    for message in state["messages"]:
+            process_debate_chunk(chunk)
 
-                        if role not in [
-                            AgentType.PRO,
-                            AgentType.CON,
-                            AgentType.JUDGE,
-                        ]:
-                            continue
 
-                        msg_id = f"{message['current_round']}_{message['role']}"
-                        if msg_id in displayed_messages:
-                            continue
+def process_debate_chunk(chunk):
+    if not chunk:
+        return
 
-                        if message["role"] == AgentType.PRO:
-                            avatar = "🙆🏻‍♀️"
-                        elif message["role"] == AgentType.CON:
-                            avatar = "🙅🏻‍♂"
-                        elif message["role"] == AgentType.JUDGE:
-                            avatar = "👩🏻‍⚖️"
-                        with st.chat_message(message["role"], avatar=avatar):
-                            st.markdown(message["content"])
+    node = chunk[0] if len(chunk) > 0 else None
 
-                        displayed_messages.add(msg_id)
-                    if role == AgentType.JUDGE:
-                        st.session_state.app_mode = "results"
-                        st.session_state.viewing_history = False
+    if not node or node == ():
+        return
 
-                        # 토론 결과 저장 (docs 추가)
-                        debate_repository.save(
-                            topic,
-                            max_rounds,
-                            state["messages"],
-                            state["docs"],  # RAG 결과 저장
-                        )
+    node_name = node[0]
+    role = node_name.split(":")[0]
+    subgraph = chunk[1]
+    subgraph_node = subgraph.get("update_state", None)
+    if subgraph_node:
+        response = subgraph_node.get("response", None)
 
-    # 토론 결과 모드로 전환
-    st.session_state.app_mode = "results"
-    st.rerun()
+        if role == AgentType.PRO:
+            avatar = "🙆🏻‍♀️"
+        elif role == AgentType.CON:
+            avatar = "🙅🏻‍♂"
+        elif role == AgentType.JUDGE:
+            avatar = "👩🏻‍⚖️"
+
+        debate_state = subgraph_node.get("debate_state", None)
+        current_round = debate_state.get("current_round")
+        max_rounds = debate_state.get("max_rounds")
+
+        if role == AgentType.PRO:
+            st.subheader(f"{current_round}/{max_rounds} 라운드")
+
+        with st.chat_message(role, avatar=avatar):
+            st.markdown(response)
+
+        if role == AgentType.JUDGE:
+            st.session_state.app_mode = "results"
+            st.session_state.viewing_history = False
+            st.session_state.messages = debate_state.get("messages", [])
+            st.session_state.docs = debate_state.get("docs", {})
+
+            topic = debate_state.get("topic")
+            # 토론 결과 저장 (docs 추가)
+            debate_repository.save(
+                topic,
+                max_rounds,
+                st.session_state.messages,
+                st.session_state.docs,  # RAG 결과 저장
+            )
+
+            # 참고 자료 표시
+            if st.session_state.docs:
+                render_source_materials()
+
+            if st.button("새 토론 시작"):
+                reset_session_state()
+                st.session_state.app_mode = "input"
+                st.rerun()
 
 
 # 참고 자료 표시
@@ -190,7 +189,7 @@ def render_ui():
 
     if current_mode == "debate":
         start_debate()
-    if current_mode == "results":
+    elif current_mode == "results":
         display_debate_results()
 
 

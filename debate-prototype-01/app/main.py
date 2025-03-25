@@ -10,10 +10,10 @@ load_dotenv()
 
 # LangChain Azure OpenAI 설정
 llm = AzureChatOpenAI(
-    openai_api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+    openai_api_key=os.getenv("AOAI_API_KEY"),
+    azure_endpoint=os.getenv("AOAI_ENDPOINT"),
+    azure_deployment=os.getenv("AOAI_DEPLOY_GPT4O"),
+    api_version=os.getenv("AOAI_API_VERSION"),
     temperature=0.7,
 )
 

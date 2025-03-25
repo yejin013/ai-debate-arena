@@ -168,9 +168,9 @@ def retriever(state: DebateState) -> DebateState:
     # 검색 쿼리 생성
     query = topic
     if agentType == AgentType.PRO:
-        query += " 찬성 장점 이유 근거"
+        query = f"{topic}에 대한 찬성 의견, 장점, 긍정적 영향"
     elif agentType == AgentType.CON:
-        query += " 반대 단점 이유 근거"
+        query = f"{topic}에 대한 반대 의견, 단점, 부정적 영향"
     elif agentType == AgentType.JUDGE:
         query += " 평가 기준 객관적 사실"
 

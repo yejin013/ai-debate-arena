@@ -32,48 +32,58 @@ class WorkflowResponse(BaseModel):
 
 
 async def debate_generator(debate_graph, initial_state, langfuse_handler):
-    for event in debate_graph.stream(
+    # 그래프에서 청크 스트리밍
+    for chunk in debate_graph.stream(
         initial_state,
         config={"callbacks": [langfuse_handler]},
+        subgraphs=True,
+        stream_mode="updates",
     ):
-
-        if isinstance(event, dict) and len(event) == 1:
-            role = list(event.keys())[0]
-            state = event[role]
-        else:
+        if not chunk:
             continue
 
-        serializable_state = {
-            "role": role,
-            "topic": state.get("topic", ""),
-            "current_round": state.get("current_round", 0),
-            "max_rounds": state.get("max_rounds", 0),
-            "prev_node": state.get("prev_node", ""),
-            "messages": [],
-        }
+        node = chunk[0] if len(chunk) > 0 else None
+        if not node or node == ():
+            continue
 
-        if "messages" in state:
-            for msg in state["messages"]:
-                serializable_msg = {
-                    "role": msg.get("role", ""),
-                    "content": msg.get("content", ""),
-                    "round": msg.get("round", 0),
-                }
-                serializable_state["messages"].append(serializable_msg)
+        node_name = node[0]
+        role = node_name.split(":")[0]
+        subgraph = chunk[1]
+        subgraph_node = subgraph.get("update_state", None)
 
-        event_data = {"type": "update", "data": serializable_state}
-        yield f"data: {json.dumps(event_data, ensure_ascii=False)}\n\n"
-        print(event_data)
+        if subgraph_node:
+            response = subgraph_node.get("response", None)
+            debate_state = subgraph_node.get("debate_state", None)
+            messages = debate_state.get("messages", [])
+            round = debate_state.get("current_round")
+            max_rounds = debate_state.get("max_rounds")
+            docs = debate_state.get("docs", {})
+            topic = debate_state.get("topic")
 
-        await asyncio.sleep(0.01)
+            state = {
+                "role": role,
+                "response": response,
+                "topic": topic,
+                "messages": messages,
+                "current_round": round,
+                "max_rounds": max_rounds,
+                "docs": docs,
+            }
 
+            event_data = {"type": "update", "data": state}
+            yield f"data: {json.dumps(event_data, ensure_ascii=False)}\n\n"
+            print(event_data)
+
+            await asyncio.sleep(0.01)
+
+    # 디베이트 종료 메시지
     yield f"data: {json.dumps({'type': 'end', 'data': {}}, ensure_ascii=False)}\n\n"
 
 
 # 엔드포인트 경로 수정 (/debate/stream -> 유지)
 @router.post("/debate/stream")
 async def stream_debate_workflow(request: WorkflowRequest):
-    debate_topic = request.topic
+    topic = request.topic
     max_rounds = request.max_rounds
     enable_rag = request.enable_rag
 
@@ -81,12 +91,12 @@ async def stream_debate_workflow(request: WorkflowRequest):
     debate_graph = create_debate_graph(enable_rag, session_id)
 
     initial_state: DebateState = {
-        "topic": debate_topic,
+        "topic": topic,
         "messages": [],
         "current_round": 1,
-        "prev_node": AgentType.PRO,
         "max_rounds": max_rounds,
-        "docs": {},
+        "prev_node": "START",  # 이전 노드 START로 설정
+        "docs": {},  # RAG 결과 저장
     }
 
     langfuse_handler = CallbackHandler(session_id=session_id)
@@ -96,31 +106,3 @@ async def stream_debate_workflow(request: WorkflowRequest):
         debate_generator(debate_graph, initial_state, langfuse_handler),
         media_type="text/event-stream",
     )
-
-
-# 엔드포인트 경로 수정
-@router.post("/debate", response_model=WorkflowResponse)
-async def run_debate_workflow(request: WorkflowRequest):
-    debate_topic = request.topic
-    max_rounds = request.max_rounds
-    enable_rag = request.enable_rag
-
-    session_id = str(uuid.uuid4())
-    debate_graph = create_debate_graph(enable_rag, session_id)
-
-    initial_state: DebateState = {
-        "topic": debate_topic,
-        "messages": [],
-        "current_round": 1,
-        "prev_node": AgentType.PRO,
-        "max_rounds": max_rounds,
-        "docs": {},
-    }
-
-    langfuse_handler = CallbackHandler(session_id=session_id)
-
-    response = debate_graph.invoke(
-        initial_state,
-        config={"callbacks": [langfuse_handler]},
-    )
-    return WorkflowResponse(status="success", result=response)

@@ -4,7 +4,6 @@
   // 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
   "version": "0.2.0",
   "configurations": [
-
     {
       "name": "Python 디버거: 현재 파일",
       "type": "debugpy",
@@ -12,7 +11,7 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "env": {
-          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
       }
     },
     {
@@ -21,16 +20,16 @@
       "request": "launch",
       "module": "streamlit",
       "args": [
-          "run",
-          "${file}",
-          "--server.port=8501",
-          "--server.headless=true"
+        "run",
+        "${file}",
+        "--server.port=8501",
+        "--server.headless=true"
       ],
       "console": "integratedTerminal",
       "justMyCode": false,
       "env": {
-          "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
+        "PYTHONPATH": "${workspaceFolder}:${workspaceFolder}/app"
       }
-  }
+    }
   ]
 }

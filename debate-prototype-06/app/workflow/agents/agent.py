@@ -52,9 +52,6 @@ class Agent(ABC):
         # 그래프 컴파일
         self.graph = workflow.compile()
 
-    def get_graph(self):
-        return self.graph
-
     # 자료 검색
     def _retrieve_context(self, state: AgentState) -> AgentState:
 
@@ -172,3 +169,6 @@ class Agent(ABC):
 
         # 최종 토론 상태 반환
         return result["debate_state"]
+
+    def visualize(self):
+        self.graph.visualize()

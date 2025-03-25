@@ -9,7 +9,6 @@ from database.model import Base
 logger = logging.getLogger(__name__)
 
 DB_PATH = os.getenv("DB_PATH")
-CONNECTION_NAME = "sqlite_db"
 
 
 class DatabaseSession:
@@ -31,7 +30,7 @@ class DatabaseSession:
     # st.cache_resource 데코레이터를 사용하여 Streamlit 앱이 실행되는 동안 동일한 리소스를 공유
     @st.cache_resource
     def get_connection(_self):
-        return st.connection(CONNECTION_NAME, type="sql", url=f"sqlite:///{DB_PATH}")
+        return st.connection("sqlite_db")
 
     # 데이터베이스 작업을 위한 세션 반환
     def get_session(self):
