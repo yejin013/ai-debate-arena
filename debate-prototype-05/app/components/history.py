@@ -45,7 +45,6 @@ def render_history_list(debate_history):
                         st.session_state.viewing_history = True
                         st.session_state.messages = messages
                         st.session_state.loaded_topic = topic
-                        st.session_state.loaded_debate_id = id
                         st.session_state.docs = docs
                         st.session_state.app_mode = "results"
                         st.rerun()

@@ -1,8 +1,11 @@
 import json
 import requests
 import streamlit as st
+from components.history import save_debate
 from components.sidebar import render_sidebar
 from utils.state_manager import init_session_state, reset_session_state
+
+API_BASE_URL = "http://localhost:8000/api/v1"
 
 
 class AgentType:

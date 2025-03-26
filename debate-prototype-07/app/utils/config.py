@@ -20,7 +20,7 @@ def get_llm():
 def get_embeddings():
     return AzureOpenAIEmbeddings(
         model=os.getenv("AOAI_EMBEDDING_DEPLOYMENT"),
-        openai_api_version="AOAI_API_VERSION",
+        openai_api_version=os.getenv("AOAI_API_VERSION"),
         api_key=os.getenv("AOAI_API_KEY"),
         azure_endpoint=os.getenv("AOAI_ENDPOINT"),
     )

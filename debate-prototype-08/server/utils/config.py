@@ -11,9 +11,9 @@ class Settings(BaseSettings):
     # Azure OpenAI 설정
     AOAI_API_KEY: str
     AOAI_ENDPOINT: str
-    AOAI_DEPLOYMENT: str
+    AOAI_DEPLOY_GPT4O: str
     AOAI_EMBEDDING_DEPLOYMENT: str
-    AOAI_API_VERSION: str = "2023-05-15"
+    AOAI_API_VERSION: str
 
     # Langfuse 설정
     LANGFUSE_PUBLIC_KEY: str
@@ -37,7 +37,7 @@ class Settings(BaseSettings):
         return AzureChatOpenAI(
             openai_api_key=self.AOAI_API_KEY,
             azure_endpoint=self.AOAI_ENDPOINT,
-            azure_deployment=self.AOAI_DEPLOYMENT,
+            azure_deployment=self.AOAI_DEPLOY_GPT4O,
             api_version=self.AOAI_API_VERSION,
             temperature=0.7,
             streaming=True,  # 스트리밍 활성화
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
         """Azure OpenAI Embeddings 인스턴스를 반환합니다."""
         return AzureOpenAIEmbeddings(
             model=self.AOAI_EMBEDDING_DEPLOYMENT,
-            openai_api_version=self.AOAI_API_VERSION
+            openai_api_version=self.AOAI_API_VERSION,
             api_key=self.AOAI_API_KEY,
             azure_endpoint=self.AOAI_ENDPOINT,
         )

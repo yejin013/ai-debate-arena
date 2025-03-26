@@ -1,6 +1,5 @@
 import uvicorn
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 # 절대 경로 임포트로 수정
 from routers import workflow
