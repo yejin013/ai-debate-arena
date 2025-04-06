@@ -18,7 +18,7 @@ class AgentType:
         else:
             return role
 
-
+# 각 노드들이 입력을 받고 값을 변경하거나 생성해서 다음에 넘겨줌
 class DebateState(TypedDict):
 
     topic: str
